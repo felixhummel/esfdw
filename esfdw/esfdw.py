@@ -258,12 +258,16 @@ class ESForeignDataWrapper(ForeignDataWrapper):
                 if self._columns[column].type_name.endswith('[]'):
                     return value
                 return value[0]
-            row = {
-                column: _massage_value(
+
+
+            row = {}
+            for column in columns:
+                row[column] =  _massage_value(
                     obs.get(
                         self._column_to_es_field(column),
                         default_value),
-                    column) for column in columns}
+                    column)
+
             yield row
 
     def get_rel_size(self, quals, columns):

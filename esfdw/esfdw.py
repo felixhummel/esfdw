@@ -1,7 +1,7 @@
 from datetime import datetime
 import logging
 import re
-import yaml
+import json
 
 from multicorn import ForeignDataWrapper, ANY, ALL
 from multicorn.utils import log_to_postgres
@@ -40,7 +40,7 @@ class ESForeignDataWrapper(ForeignDataWrapper):
         self._base_query = None
         self._doc_type = options['doc_type']
         if options.get('query'):
-            self._base_query = yaml.safe_load(options['query'])
+            self._base_query = json.loads(options['query'])
         if options.get('column_name_translation') == 'true':
             self._column_to_es_field = self.convert_column_name
         else:

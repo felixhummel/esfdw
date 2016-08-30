@@ -95,6 +95,7 @@ CREATE FOREIGN TABLE foreign_es_table (
   * `index` is the value of the index parameter to use in Elasticsearch searches.
   * `doc_type` is the value of the doc_type parameter to use in Elasticsearch searches.
   <a name="column_name_translation"></a>
+  * `query` is elastic json which will be used to restrict the data returned from the elastic index/type. This should be the same json that would go inside of the `query` parameter of an elastic search request
   * `column_name_translation` specifies whether PostgreSQL column name undergo translation when mapped to Elasticsearch field names. If the value of this option is `true`, the following translations occur:
     * An underscore (`_`) is converted to a dash (`-`)
     * A double underscore (`__`) is converted to a dot (`.`) and can be used for nested Elasticsearch fields

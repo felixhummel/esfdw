@@ -226,6 +226,10 @@ class ESForeignDataWrapper(ForeignDataWrapper):
                 must_list=must_list,
                 must_not_list=must_not_list,
                 base_query=self._base_query)
+        elif self._base_query:
+            query = {
+                'query': self._base_query
+            }
         else:
             query = {}
         # It's not clear if we should be using `fields` or `_source` here.
@@ -282,6 +286,10 @@ class ESForeignDataWrapper(ForeignDataWrapper):
                 must_list=must_list,
                 must_not_list=must_not_list,
                 base_query=self._base_query)
+        elif self._base_query:
+            query = {
+                'query': self._base_query
+            }
         else:
             query = {}
         query['size'] = 0

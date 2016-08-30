@@ -21,14 +21,14 @@ extension for writing foreign data wrappers in Python.
 
 setup(
     name='esfdw',
-    description='PostgreSQL foreign data wrapper for Elasticsearch',
+    description='PostgreSQL foreign data wrapper for Elasticsearch - forked from https://github.com/rtkwlf/esfdw',
     long_description=long_description,
-    version='0.1.0',
-    author='Arctic Wolf Networks, Inc.',
-    author_email='info@arcticwolf.com',
+    version='0.1.2',
+    author='Kyle Lilly',
+    author_email='kyle@immuta.com',
     license='MIT',
     packages=['esfdw'],
     test_suite='tests',
-    url='https://github.com/rtkwlf/esfdw',
-    download_url='https://github.com/rtkwlf/esfdw/tarball/0.1.0'
+    url='https://github.com/KyleLilly/esfdw',
+    download_url='https://github.com/KyleLilly/esfdw/tarball/0.1.3'
 )

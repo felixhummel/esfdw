@@ -85,7 +85,7 @@ class MatchList(list):
             )
 
 
-def get_filtered_query(must_list=None, must_not_list=None):
+def get_filtered_query(must_list=None, must_not_list=None, base_query=None):
     """Get the correct query string for a boolean filter. Accept must and
     must_not lists. Use MatchList for generating the appropriate lists.
     """
@@ -103,4 +103,6 @@ def get_filtered_query(must_list=None, must_not_list=None):
             }
         }
     }
+    if base_query:
+        result['query']['filtered']['query'] = base_query
     return result

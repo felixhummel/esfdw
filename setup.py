@@ -23,7 +23,7 @@ setup(
     name='esfdw',
     description='PostgreSQL foreign data wrapper for Elasticsearch - forked from https://github.com/rtkwlf/esfdw',
     long_description=long_description,
-    version='0.1.2',
+    version='0.1.3',
     author='Kyle Lilly',
     author_email='kyle@immuta.com',
     license='MIT',

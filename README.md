@@ -95,12 +95,14 @@ CREATE FOREIGN TABLE foreign_es_table (
   * `index` is the value of the index parameter to use in Elasticsearch searches.
   * `doc_type` is the value of the doc_type parameter to use in Elasticsearch searches.
   <a name="column_name_translation"></a>
-  * `query` is elastic json which will be used to restrict the data returned from the elastic index/type. This should be the same json that would go inside of the `query` parameter of an elastic search request
+  * `query` is elastic json which will be used to restrict the data returned from the elastic index/type. This should be the same json that would go inside of the `query` parameter of an Elasticsearch `_search` request
   * `column_name_translation` specifies whether PostgreSQL column name undergo translation when mapped to Elasticsearch field names. If the value of this option is `true`, the following translations occur:
     * An underscore (`_`) is converted to a dash (`-`)
     * A double underscore (`__`) is converted to a dot (`.`) and can be used for nested Elasticsearch fields
     * `timestamp` is mapped to `@timestamp` to match the common Logstash convention
     * For example, the PostgreSQL column name `foo__bar_baz` is converted to the Elasticsearch field `foo.bar-baz`
+  * Columns support an es_property option which maps the column to an elastic property via dot notation name. This is to handle highly nested Elasticsearch documents which result in column names that are over the
+  default PostgreSQL `NAMEDATLEN` of 63.
 
 <a name="mapping_to_schema"></a>
 #### Automatic (mostly) Elasticsearch mapping conversion to foreign table schema
@@ -114,6 +116,7 @@ The script generates a foreign table per doc_type per index, with the name of th
 Column types are translated from the Elasticsearch equivalent and are always scalar. Nested objects are not represented as JSON; instead, a column definition is generated for every nested leaf field. Elasticsearch mappings do not contain an indication of whether the field is a list field, which means that the script cannot know when to make a column an array. The schema can be fixed up manually if array columns are desired.
 
 Column names match the Elasticsearch field names except that [standard esfdw name translation rules are applied](#column_name_translation).
+Column names do not need to match the Elasticsearch field names but the `es_property` option must be set on each column and correspond to the Elasticsearch dot notation for the property.
 
 ### Debugging
 

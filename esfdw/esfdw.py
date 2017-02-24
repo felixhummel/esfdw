@@ -72,6 +72,12 @@ class ESForeignDataWrapper(ForeignDataWrapper):
             return self._columns[column].options['es_property']
         return self._convert_col(column)
 
+    def _column_to_es_type(self, column):
+        try:
+            return self._columns[column].options['es_type']
+        except KeyError:
+            raise Exception('es_type option is mandatory for all columns (currently looking at column {0})'.format(column))
+
     def convert_column_name(self, column):
         """Given a column name, return the corresponding Elasticsearch field name.
 
@@ -191,6 +197,9 @@ class ESForeignDataWrapper(ForeignDataWrapper):
         must_not_list = MatchList()
         for qual in quals:
             field = self._column_to_es_field(qual.field_name)
+            field_type = self._column_to_es_type(qual.field_name)
+            if field_type == 'text':
+                field = field + '.keyword'
             if qual.list_any_or_all == ANY:
                 if qual.operator[0] == '=':
                     must_list.append_terms(field, qual.value)

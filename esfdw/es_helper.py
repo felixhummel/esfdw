@@ -96,13 +96,12 @@ def get_filtered_query(must_list=None, must_not_list=None, base_query=None):
         bool_filter['must_not'] = must_not_list
     result = {
         'query': {
-            'filtered': {
-                'filter': {
-                    'bool': bool_filter
-                }
-            }
+            'bool': bool_filter
         }
     }
     if base_query:
-        result['query']['filtered']['query'] = base_query
+        # append base_query to "must" list
+        if 'must' not in result['query']['bool']:
+            result['query']['bool']['must'] = []
+        result['query']['bool']['must'].append(base_query)
     return result

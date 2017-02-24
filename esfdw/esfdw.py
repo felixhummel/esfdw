@@ -223,21 +223,8 @@ class ESForeignDataWrapper(ForeignDataWrapper):
                 must_not_list=must_not_list)
         else:
             query = {}
-        # It's not clear if we should be using `fields` or `_source` here.
-        # `fields` is useful for "stored" fields, which are stored separately
-        # from the main _source JSON document. The idea is that the entire document
-        # does not need to be reparsed when loading only a subset of the fields.
-        # When fields aren't "stored" but are doc_values, they still seem to be
-        # stored independently.
-        # Tests suggest that at least in some cases when dealing with doc_values,
-        # `fields` 1.16 times better than `_source`.
-        query['fields'] = [self._column_to_es_field(
+        query['_source'] = [self._column_to_es_field(
             column) for column in columns]
-        # When using fields, the values always come back in an array, to make for
-        # more consistent treatment of any actual array fields that we may have
-        # requested. If the field is not truly an array field, the value comes back
-        # in an array of one element.
-        default_value = [None]
         log_to_postgres('query: %s' % query, logging.DEBUG)
         for result in scan(
                 self.esclient,
@@ -246,23 +233,19 @@ class ESForeignDataWrapper(ForeignDataWrapper):
                 doc_type=self._doc_type,
                 size=self._SCROLL_SIZE,
                 scroll=self._SCROLL_LENGTH):
-            obs = result.get('fields', {})
+            obs = result.get('_source', {})
 
             def _massage_value(value, column):
                 if column == '_id':
                     # `_id` is special in that it's always present in the top-level
-                    # result, not under `fields`.
+                    # result, not under `_source`.
                     return result['_id']
-                # If the column type is an array, return the list.
-                # Otherwise, return the first element of the array.
-                if self._columns[column].type_name.endswith('[]'):
-                    return value
-                return value[0]
+                return value
             row = {
                 column: _massage_value(
                     obs.get(
                         self._column_to_es_field(column),
-                        default_value),
+                        None),
                     column) for column in columns}
             yield row
 

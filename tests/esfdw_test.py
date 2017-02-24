@@ -11,7 +11,19 @@ from esfdw.es_helper import MatchList
 class TestQualProcessing(unittest.TestCase):
 
     def setUp(self):
-        self._fdw = ESForeignDataWrapper({'doc_type': 'foo_doc'}, [])
+        self._columns = {
+            'foo': ColumnDefinition('foo', type_name='text', options={'es_property': 'es.foo'}),
+            'bar': ColumnDefinition('bar', type_name='int', options={'es_property': 'es.bar'}),
+            'baz': ColumnDefinition('baz', type_name='text[]', options={'es_property': 'es.baz'}),
+            'num': ColumnDefinition('num', type_name='int', options={'es_property': 'es.num'}),
+            'a': ColumnDefinition('num', type_name='text'),
+            'b': ColumnDefinition('num', type_name='text'),
+            'c': ColumnDefinition('num', type_name='text', options={'es_property': 'es.c'}),
+            'd': ColumnDefinition('num', type_name='text', options={'es_property': 'es.d'}),
+            'e': ColumnDefinition('num', type_name='int', options={'es_property': 'es.e'}),
+            'quux': ColumnDefinition('quux', type_name='int')
+        }
+        self._fdw = ESForeignDataWrapper({'doc_type': 'foo_doc'}, self._columns)
 
     def test_normalize_operator(self):
         for op in ('=', '~~', '<@', '<', '>', '<=', '>='):
@@ -68,17 +80,17 @@ class TestQualProcessing(unittest.TestCase):
             {'regexp': {'b': 'f'}}
         ]
         }, ml)
-        self.assertIn({'prefix': {'d': 'g'}}, ml)
-        self.assertIn({'regexp': {'d': 'h..*'}}, ml)
-        self.assertIn({'prefix': {'d': 'i'}}, ml)
+        self.assertIn({'prefix': {'es.d': 'g'}}, ml)
+        self.assertIn({'regexp': {'es.d': 'h..*'}}, ml)
+        self.assertIn({'prefix': {'es.d': 'i'}}, ml)
         self.assertEqual(len(mnl), 3)
         self.assertIn({'and': [
-            {'regexp': {'c': 'a.*b'}},
-            {'regexp': {'c': 'c.d'}},
-            {'regexp': {'c': '.e.*f.*'}}
+            {'regexp': {'es.c': 'a.*b'}},
+            {'regexp': {'es.c': 'c.d'}},
+            {'regexp': {'es.c': '.e.*f.*'}}
         ]
         }, mnl)
-        self.assertIn({'terms': {'e': [1, 2]}}, mnl)
+        self.assertIn({'terms': {'es.e': [1, 2]}}, mnl)
 
 
 class TestAppendFilter(unittest.TestCase):
@@ -299,10 +311,10 @@ class TestESIntegrationPoints(unittest.TestCase):
 
     def setUp(self):
         self._columns = {
-            'f__o_o': ColumnDefinition('f__o_o', type_name='text'),
+            'f__o_o': ColumnDefinition('f__o_o', type_name='text', options={'es_property': 'es.foo'}),
             'bar': ColumnDefinition('bar', type_name='int'),
             'baz': ColumnDefinition('baz', type_name='text[]'),
-            'quux': ColumnDefinition('quux', type_name='int')
+            'quux': ColumnDefinition('quux', type_name='int', options={'es_property': 'qq.quux'})
         }
         self._fdw = ESForeignDataWrapper({'doc_type': 'foo_doc',
                                           'index': 'our_index'},
@@ -315,9 +327,9 @@ class TestESIntegrationPoints(unittest.TestCase):
     @patch('esfdw.esfdw.scan')
     def test_execute(self, scan_mock, _elasticsearch_mock):
         scan_mock.return_value = [
-            {'fields': {'f__o_o': ['value'], 'bar': [6], 'baz': ['a', 'b', 'c']}},
-            {'fields': {'f__o_o': ['value'], 'bar': [7], 'baz': ['d', 'e', 'f']}},
-            {'fields': {'f__o_o': ['value'], 'bar': [8], 'baz': ['g', 'h'], 'quux': ['hi']}}
+            {'fields': {'es.foo': ['value'], 'bar': [6], 'baz': ['a', 'b', 'c']}},
+            {'fields': {'es.foo': ['value'], 'bar': [7], 'baz': ['d', 'e', 'f']}},
+            {'fields': {'es.foo': ['value'], 'bar': [8], 'baz': ['g', 'h'], 'qq.quux': ['hi']}}
         ]
         rows = list(
             self._fdw.execute(
@@ -325,7 +337,7 @@ class TestESIntegrationPoints(unittest.TestCase):
                     'f__o_o', 'bar', 'baz', 'quux']))
 
         expected_query = {
-            'fields': ['f__o_o', 'bar', 'baz', 'quux'],
+            'fields': ['es.foo', 'bar', 'baz', 'qq.quux'],
             'query': {
                 'filtered': {
                     'filter': {
@@ -333,7 +345,7 @@ class TestESIntegrationPoints(unittest.TestCase):
                             'must': [
                                 {
                                     'term': {
-                                        'f__o_o': 'value'
+                                        'es.foo': 'value'
                                     },
                                 },
                                 {
@@ -380,7 +392,7 @@ class TestESIntegrationPoints(unittest.TestCase):
                             'must': [
                                 {
                                     'term': {
-                                        'f__o_o': 'value'
+                                        'es.foo': 'value'
                                     },
                                 },
                                 {
@@ -489,6 +501,236 @@ class TestESIntegrationPoints(unittest.TestCase):
 
         expected_rows = [{'_id': 'value'}]
         self.assertEqual(rows, expected_rows)
+
+@patch('esfdw.esfdw.elasticsearch.Elasticsearch')
+class TestESIntegrationPointsQueryBased(unittest.TestCase):
+
+    def setUp(self):
+        self._columns = {
+            'f__o_o': ColumnDefinition('f__o_o', type_name='text'),
+            'bar': ColumnDefinition('bar', type_name='int', options={'es_property': 'es.bar'}),
+            'baz': ColumnDefinition('baz', type_name='text[]'),
+            'quux': ColumnDefinition('quux', type_name='int')
+        }
+        self._fdw = ESForeignDataWrapper({'doc_type': 'foo_doc',
+                                          'index': 'our_index',
+                                          'query': '{ "bool" : { "must": [ { "range": { "es.bar": { "lte": 30 } } }, { "term": { "f__o_o": { "value": "bar" } } } ] } }'},
+                                         self._columns)
+        self._quals = [
+            Qual('quux', '=', '100'),
+            Qual('bar', '>', 5)
+        ]
+
+    @patch('esfdw.esfdw.scan')
+    def test_execute(self, scan_mock, _elasticsearch_mock):
+        scan_mock.return_value = [
+            {'fields': {'f__o_o': ['bar'], 'es.bar': [6], 'baz': ['a', 'b', 'c'], 'quux': [100]}},
+            {'fields': {'f__o_o': ['bar'], 'es.bar': [7], 'baz': ['d', 'e', 'f'], 'quux': [100]}},
+            {'fields': {'f__o_o': ['bar'], 'es.bar': [8], 'baz': ['g', 'h'], 'quux': [100]}}
+        ]
+        rows = list(self._fdw.execute([], ['f__o_o', 'bar', 'baz', 'quux']))
+
+        expected_query = {
+            'query': {
+                'bool': {
+                    'must': [
+                        {
+                            'range': {
+                                'es.bar': {
+                                    'lte': 30
+                                }
+                            }
+                        },
+                        {
+                            'term': {
+                                'f__o_o': {
+                                    'value': 'bar'
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            'fields': ['f__o_o', 'es.bar', 'baz', 'quux']
+        }
+
+        scan_mock.assert_called_once_with(
+            self._fdw.esclient,
+            query=expected_query,
+            index='our_index',
+            doc_type='foo_doc',
+            size=self._fdw._SCROLL_SIZE,
+            scroll=self._fdw._SCROLL_LENGTH)
+
+        expected_rows = [
+            {'f__o_o': 'bar', 'bar': 6, 'baz': ['a', 'b', 'c'], 'quux': 100},
+            {'f__o_o': 'bar', 'bar': 7, 'baz': ['d', 'e', 'f'], 'quux': 100},
+            {'f__o_o': 'bar', 'bar': 8, 'baz': ['g', 'h'], 'quux': 100}
+        ]
+        self.assertEqual(rows, expected_rows)
+
+    def test_get_rel_size(self, _elasticsearch_mock):
+        self._fdw.esclient.search.return_value = {
+            'hits': {
+                'total': 100
+            }
+        }
+        rel_size = self._fdw.get_rel_size([], self._columns.keys())
+        expected_query = {
+            'size': 0,
+            'query': {
+                'bool': {
+                    'must': [
+                        {
+                            'range': {
+                                'es.bar': {
+                                    'lte': 30
+                                }
+                            }
+                        },
+                        {
+                            'term': {
+                                'f__o_o': {
+                                    'value': 'bar'
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+        self._fdw.esclient.search.assert_called_once_with(
+            index='our_index', body=expected_query, doc_type='foo_doc')
+        self.assertEqual(rel_size, (100, 400))
+
+    @patch('esfdw.esfdw.scan')
+    def test_execute_quals(self, scan_mock, _elasticsearch_mock):
+        scan_mock.return_value = [
+            {'fields': {'f__o_o': ['bar'], 'es.bar': [6], 'baz': ['a', 'b', 'c'], 'quux': [100]}},
+            {'fields': {'f__o_o': ['bar'], 'es.bar': [7], 'baz': ['d', 'e', 'f'], 'quux': [100]}},
+            {'fields': {'f__o_o': ['bar'], 'es.bar': [8], 'baz': ['g', 'h'], 'quux': [100]}}
+        ]
+        rows = list(
+            self._fdw.execute(
+                self._quals, [
+                    'f__o_o', 'bar', 'baz', 'quux']))
+
+        expected_query = {
+            'query': {
+                'filtered': {
+                    'filter': {
+                        'bool': {
+                            'must': [
+                                {
+                                    'term': {
+                                        'quux': '100'
+                                    },
+                                },
+                                {
+                                    'range': {
+                                        'es.bar': {
+                                            'gt': 5
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    'query': {
+                        'bool': {
+                            'must': [
+                                {
+                                    'range': {
+                                        'es.bar': {
+                                            'lte': 30
+                                        }
+                                    }
+                                },
+                                {
+                                    'term': {
+                                        'f__o_o': {
+                                            'value': 'bar'
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                    }
+                }
+            },
+            'fields': ['f__o_o', 'es.bar', 'baz', 'quux']
+        }
+
+        scan_mock.assert_called_once_with(
+            self._fdw.esclient,
+            query=expected_query,
+            index='our_index',
+            doc_type='foo_doc',
+            size=self._fdw._SCROLL_SIZE,
+            scroll=self._fdw._SCROLL_LENGTH)
+
+        expected_rows = [
+            {'f__o_o': 'bar', 'bar': 6, 'baz': ['a', 'b', 'c'], 'quux': 100},
+            {'f__o_o': 'bar', 'bar': 7, 'baz': ['d', 'e', 'f'], 'quux': 100},
+            {'f__o_o': 'bar', 'bar': 8, 'baz': ['g', 'h'], 'quux': 100}
+        ]
+        self.assertEqual(rows, expected_rows)
+
+    def test_get_rel_size_quals(self, _elasticsearch_mock):
+        self._fdw.esclient.search.return_value = {
+            'hits': {
+                'total': 100
+            }
+        }
+        rel_size = self._fdw.get_rel_size(self._quals, self._columns.keys())
+        expected_query = {
+            'size': 0,
+            'query': {
+                'filtered': {
+                    'filter': {
+                        'bool': {
+                            'must': [
+                                {
+                                    'term': {
+                                        'quux': '100'
+                                    },
+                                },
+                                {
+                                    'range': {
+                                        'es.bar': {
+                                            'gt': 5
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    'query': {
+                        'bool': {
+                            'must': [
+                                {
+                                    'range': {
+                                        'es.bar': {
+                                            'lte': 30
+                                        }
+                                    }
+                                },
+                                {
+                                    'term': {
+                                        'f__o_o': {
+                                            'value': 'bar'
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                    }
+                }
+            }
+        }
+        self._fdw.esclient.search.assert_called_once_with(
+            index='our_index', body=expected_query, doc_type='foo_doc')
+        self.assertEqual(rel_size, (100, 400))
 
 
 if __name__ == '__main__':

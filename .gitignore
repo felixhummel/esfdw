@@ -1,0 +1,3 @@
+*.py[co]
+/.env
+/docker-compose.override.yml

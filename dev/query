@@ -3,4 +3,6 @@ set -euo pipefail
 
 container=$(docker-compose ps -q postgres)
 
-exec docker exec -i --user postgres $container psql
+# deep black magic to prepend the DEBUG setting
+# https://stackoverflow.com/a/33139133/241240
+exec cat <(echo "SET client_min_messages TO DEBUG;") <(cat -) | exec docker exec -i --user postgres $container psql

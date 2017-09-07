@@ -14,3 +14,5 @@ COPY esfdw/ /esfdw/
 RUN python /esfdw/setup.py develop
 
 VOLUME ["/esfdw"]
+
+RUN mkdir /home/postgres && chown postgres: /home/postgres

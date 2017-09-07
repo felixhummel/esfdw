@@ -6,13 +6,15 @@ ADD docker-entrypoint-initdb.d/ /docker-entrypoint-initdb.d/
 ARG elasticsearch_pip_install_string
 RUN pip install "$elasticsearch_pip_install_string"
 
-RUN mkdir /esfdw
+RUN mkdir /src
 
-COPY setup.py /esfdw/
-COPY esfdw/ /esfdw/
+COPY setup.py /src/
+COPY esfdw/ /src/esfdw
 
-RUN python /esfdw/setup.py develop
+RUN ls /src
+RUN cd /src && python setup.py develop
 
-VOLUME ["/esfdw"]
+VOLUME ["/src"]
+WORKDIR /src
 
 RUN mkdir /home/postgres && chown postgres: /home/postgres

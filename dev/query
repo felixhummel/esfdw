@@ -1,0 +1,6 @@
+#!/bin/bash
+set -euo pipefail
+
+container=$(docker-compose ps -q postgres)
+
+exec docker exec -i --user postgres $container psql

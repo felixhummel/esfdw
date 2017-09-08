@@ -54,7 +54,7 @@ class ESForeignDataWrapper(ForeignDataWrapper):
 
     def debug(self, msg):
         if self._debug:
-            print(msg)
+            print('DEBUG-esfdw: %s' % msg)
 
     def _flush_logs(self):
         result = '\n    >>> '.join(self._logs)
@@ -261,6 +261,9 @@ class ESForeignDataWrapper(ForeignDataWrapper):
                     # `_id` is special in that it's always present in the top-level
                     # result, not under `fields`.
                     return result['_id']
+                # XXX list join draft
+                if isinstance(value, list):
+                    return ','.join(value)
                 return value
             row = {
                 column: _massage_value(

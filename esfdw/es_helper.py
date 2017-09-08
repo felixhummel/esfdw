@@ -96,11 +96,7 @@ def get_filtered_query(must_list=None, must_not_list=None):
         bool_filter['must_not'] = must_not_list
     result = {
         'query': {
-            'filtered': {
-                'filter': {
-                    'bool': bool_filter
-                }
-            }
+            'bool': bool_filter
         }
     }
     return result

@@ -10,6 +10,7 @@ put $id <<'EOF'
 {
   "some_id": 1,
   "my_string": "Hello World 1!",
+  "foo": "bar",
   "my_nested": {
     "string": "bar 1",
     "integer": 10
@@ -26,6 +27,7 @@ put $id <<'EOF'
 {
   "some_id": 2,
   "my_string": "Hello World 2!",
+  "foo": "bar",
   "my_nested": {
     "string": "bar 2",
     "integer": 20

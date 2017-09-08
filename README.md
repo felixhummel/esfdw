@@ -29,6 +29,7 @@ The following is not currently supported, but contributions are always welcome!
 
   * UPDATE or DELETE statements. In other words, the Multicorn write API is not implemented.
   * Pushing down sort (e.g., `ORDER BY`) qualifiers to Elasticsearch.
+  * WHERE statements with OR (see [this multicorn issue](https://github.com/Kozea/Multicorn/issues/30))
 
 #### Caveats
 

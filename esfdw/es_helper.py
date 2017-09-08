@@ -85,18 +85,22 @@ class MatchList(list):
             )
 
 
-def get_filtered_query(must_list=None, must_not_list=None):
+def get_bool_query(must_list=None, must_not_list=None):
     """Get the correct query string for a boolean filter. Accept must and
     must_not lists. Use MatchList for generating the appropriate lists.
     """
-    bool_filter = {}
-    if must_list:
-        bool_filter['must'] = must_list
-    if must_not_list:
-        bool_filter['must_not'] = must_not_list
+    if must_list is None and must_not_list is None:
+        raise ValueError('Either must_list or must_not_list must be set')
+    # https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-bool-query.html
     result = {
         'query': {
-            'bool': bool_filter
+            'bool': {}
         }
     }
+    # we use "filter" instead of "must" here to execute in "filter" context
+    if must_list:
+        result['query']['bool']['filter'] = must_list
+    # the "must_not" clause is also executed in "filter" context
+    if must_not_list:
+        bool_filter['must_not'] = must_not_list
     return result

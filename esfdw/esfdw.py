@@ -9,7 +9,7 @@ from multicorn.utils import log_to_postgres
 import elasticsearch
 from elasticsearch.helpers import scan
 
-from .es_helper import MatchList, get_filtered_query
+from .es_helper import MatchList, get_bool_query
 
 
 class ESForeignDataWrapper(ForeignDataWrapper):
@@ -236,7 +236,7 @@ class ESForeignDataWrapper(ForeignDataWrapper):
     def execute(self, quals, columns, _sortkeys=None):
         must_list, must_not_list = self._make_match_lists(quals)
         if must_list or must_not_list:
-            query = get_filtered_query(
+            query = get_bool_query(
                 must_list=must_list,
                 must_not_list=must_not_list)
         else:
@@ -276,7 +276,7 @@ class ESForeignDataWrapper(ForeignDataWrapper):
     def get_rel_size(self, quals, columns):
         must_list, must_not_list = self._make_match_lists(quals)
         if must_list or must_not_list:
-            query = get_filtered_query(
+            query = get_bool_query(
                 must_list=must_list,
                 must_not_list=must_not_list)
         else:

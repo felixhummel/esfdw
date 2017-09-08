@@ -3,4 +3,5 @@ version: '2'
 services:
   postgres:
     volumes:
-      - .:/esfdw
+      - .:/src
+      - /home/postgres

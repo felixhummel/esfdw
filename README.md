@@ -100,6 +100,9 @@ CREATE FOREIGN TABLE foreign_es_table (
     * A double underscore (`__`) is converted to a dot (`.`) and can be used for nested Elasticsearch fields
     * `timestamp` is mapped to `@timestamp` to match the common Logstash convention
     * For example, the PostgreSQL column name `foo__bar_baz` is converted to the Elasticsearch field `foo.bar-baz`
+  * `loglevel` can be one of `DEBUG`, `INFO`, `WARNING`, `ERROR` or `CRITICAL` (see the
+    [multicorn docs](http://multicorn.readthedocs.io/en/latest/implementing-tutorial.html#error-reporting)
+  * Setting `debug` to `true` generates a lot of output. Only use for development!
 
 <a name="mapping_to_schema"></a>
 #### Automatic (mostly) Elasticsearch mapping conversion to foreign table schema

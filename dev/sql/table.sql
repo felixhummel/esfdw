@@ -5,5 +5,6 @@ CREATE FOREIGN TABLE hello (
 ) SERVER es_srv OPTIONS (
   index 'hello',
   doc_type 'example',
-  debug 'true'
+  debug 'true',
+  loglevel 'DEBUG'
 );

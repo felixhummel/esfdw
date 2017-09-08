@@ -41,6 +41,19 @@ class ESForeignDataWrapper(ForeignDataWrapper):
             self._column_to_es_field = self.convert_column_name
         else:
             self._column_to_es_field = lambda column: column
+        # debug and logging
+        self._loglevel = getattr(logging, options.get('loglevel', 'INFO'))
+        self._logs = []
+        self._debug = options.get('debug', None) == 'true'
+        if self._debug:
+            self.log('debug enabled')
+
+    def log(self, msg):
+        self._logs.append(msg)
+
+    def _flush_logs(self):
+        result = '\n>>> '.join(self._logs)
+        log_to_postgres('\n>>> ' + result, self._loglevel)
 
     @property
     def esclient(self):
@@ -238,7 +251,8 @@ class ESForeignDataWrapper(ForeignDataWrapper):
         # requested. If the field is not truly an array field, the value comes back
         # in an array of one element.
         default_value = [None]
-        log_to_postgres('query: %s' % query, logging.DEBUG)
+        self.log('query: %s' % query)
+        self._flush_logs()
         for result in scan(
                 self.esclient,
                 query=query,

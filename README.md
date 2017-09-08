@@ -1,3 +1,6 @@
+# This repository
+Please note that code in this repo is for **Elasticsearch 5** only! Go upstream for something that works on lower versions!
+
 # esfdw
 
 esfdw is a PostgreSQL [foreign data wrapper](http://www.postgresql.org/docs/current/static/postgres-fdw.html) for Elasticsearch.

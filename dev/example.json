@@ -1,8 +1,0 @@
-{
-  "my_string": "Hello World!",
-  "my_integer": 42,
-  "my_nested": {
-    "string": "bar",
-    "integer": 23
-  }
-}

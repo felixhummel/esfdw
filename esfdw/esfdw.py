@@ -14,6 +14,7 @@ from .es_helper import MatchList, get_bool_query
 
 class ESForeignDataWrapper(ForeignDataWrapper):
 
+    # https://github.com/Kozea/Multicorn/blob/master/python/multicorn/__init__.py#L147
     # These operators and negated variants (prefixed with a '!') can be
     # offloaded to ElasticSearch.
     _PUSHED_DOWN_OPERATORS = ['=', '<>', '~~', '<@', '<', '>', '<=', '>=']
@@ -36,18 +37,24 @@ class ESForeignDataWrapper(ForeignDataWrapper):
         super(ESForeignDataWrapper, self).__init__(options, columns)
         self._esclient = None
         self._options = options
+        # dict mapping column_name to column_definition
         self._columns = columns
         self._doc_type = options['doc_type']
-        if options.get('column_name_translation') == 'true':
-            self._column_to_es_field = self.convert_column_name
-        else:
-            self._column_to_es_field = lambda column: column
         # debug and logging
         self._loglevel = getattr(logging, options.get('loglevel', 'INFO'))
         self._logs = []
         self._debug = options.get('debug', None) == 'true'
         if self._debug:
             self.log('debug enabled! This generates very much output on the server.', level=logging.WARNING)
+
+    def _column_to_es_field(self, column):
+        if self._options.get('column_name_translation') == 'true':
+            return self.convert_column_name
+        options = self._columns[column].options
+        if 'es_property' in options:
+            print('got es_property for "%s"' % column)
+            return options['es_property']
+        return column
 
     def log(self, msg, level=None):
         self._logs.append(str(msg))
@@ -265,12 +272,18 @@ class ESForeignDataWrapper(ForeignDataWrapper):
                 if isinstance(value, list):
                     return ','.join(value)
                 return value
-            row = {
-                column: _massage_value(
-                    obs.get(
-                        self._column_to_es_field(column),
-                        None),
-                    column) for column in columns}
+            row = {}
+            for column in columns:
+                field = self._column_to_es_field(column)
+                if '.' in field:
+                    keys = field.split('.')
+                    current = obs
+                    for k in keys:
+                        current = current[k]
+                    val = current
+                else:
+                    val = _massage_value(obs.get(field, None), column)
+                row[column] = val
             yield row
 
     def get_rel_size(self, quals, columns):

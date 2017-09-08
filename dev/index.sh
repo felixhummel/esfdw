@@ -2,7 +2,7 @@
 set -euo pipefail
 
 put() {
-  curl -s -XPUT "http://localhost:9200/hello/example/$1" -d @- | jq .
+  curl -s -XPUT "http://localhost:9200/my_index/my_type/$1" -d @- | jq .
 }
 
 id=1

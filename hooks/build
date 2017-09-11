@@ -1,3 +1,4 @@
+#!/usr/bin/env sh
 # https://docs.docker.com/docker-cloud/builds/advanced/#build-hook-examples
 docker build --build-arg 'elasticsearch_pip_install_string=elasticsearch>=5.0.0,<6.0.0' -t $IMAGE_NAME .
 

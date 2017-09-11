@@ -138,3 +138,21 @@ For example, to have the Elasticsearch query displayed in psql, run the followin
 6. Create a new Pull Request
 
 Please include new tests with your changes! Tests live in the `tests` directory, and test files are named `<module>_test.py`, where `<module>` is the name of the module under test in the `esfdw` directory.
+
+# Development
+SQL statements live in `sql/`. Elasticsearch scripts and helpers can be found in `dev/`.
+
+Start it up, put some documents into Elasticsearch and look them up:
+```
+docker-compose up -d
+./dev/index.sh
+./dev/search.sh
+```
+
+Use the FDW:
+```
+./dev/query < sql/server.sql
+./dev/query < sql/table.sql
+./dev/query < sql/select.sql
+./dev/query < sql/json_select.sql
+```

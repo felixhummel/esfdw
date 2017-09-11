@@ -275,6 +275,7 @@ class ESForeignDataWrapper(ForeignDataWrapper):
             row = {}
             for column in columns:
                 field = self._column_to_es_field(column)
+                column_type_name = self._columns[column].type_name
                 if '.' in field:
                     keys = field.split('.')
                     current = obs
@@ -283,6 +284,10 @@ class ESForeignDataWrapper(ForeignDataWrapper):
                     val = current
                 else:
                     val = _massage_value(obs.get(field, None), column)
+                # val here can be scalar or still nested
+                # if it is defined as JSON, dump it
+                if column_type_name == 'json':
+                    val = json.dumps(obs)
                 row[column] = val
             yield row
 

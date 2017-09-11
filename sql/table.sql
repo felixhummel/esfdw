@@ -8,7 +8,8 @@ CREATE FOREIGN TABLE hello (
   my_nested TEXT,
   my_list TEXT,
   nested_string TEXT OPTIONS (es_property 'my_nested.string'),
-  nested_integer TEXT OPTIONS (es_property 'my_nested.integer')
+  nested_integer TEXT OPTIONS (es_property 'my_nested.integer'),
+  nested_as_json JSON OPTIONS (es_propery 'my_nested')
 ) SERVER es_srv OPTIONS (
   index 'my_index',
   doc_type 'my_type',

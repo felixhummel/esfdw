@@ -52,7 +52,7 @@ class ESForeignDataWrapper(ForeignDataWrapper):
             return self.convert_column_name
         options = self._columns[column].options
         if 'es_property' in options:
-            print('got es_property for "%s"' % column)
+            self.debug('got es_property for "%s"' % column)
             return options['es_property']
         return column
 

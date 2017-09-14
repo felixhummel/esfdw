@@ -280,6 +280,10 @@ class ESForeignDataWrapper(ForeignDataWrapper):
                     keys = field.split('.')
                     current = obs
                     for k in keys:
+                        # return None for nested fields without a value in this doc
+                        if not k in current:
+                            current = None
+                            break
                         current = current[k]
                     val = current
                 else:

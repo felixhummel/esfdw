@@ -270,7 +270,10 @@ class ESForeignDataWrapper(ForeignDataWrapper):
                     return result['_id']
                 # XXX list join draft
                 if isinstance(value, list):
-                    return ','.join(value)
+                    if all([isinstance(v, str) for v in value]):
+                        return ','.join(value)
+                    else:
+                        return value
                 return value
             row = {}
             for column in columns:

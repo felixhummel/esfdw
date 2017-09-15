@@ -262,7 +262,10 @@ class ESForeignDataWrapper(ForeignDataWrapper):
                     val = obs.get(field, None)
                 if isinstance(val, list):
                     separator = self._get_column_option(column_name, 'list_separator', ',')
-                    val = separator.join([str(x) for x in val])
+                    if all([isinstance(x, unicode) for x in val]):
+                        val = separator.join([str(x) for x in val])
+                    else:
+                        val = json.dumps(val)
                 # val here can be scalar or still nested
                 # if it is defined as JSON, dump it
                 if column_type_name == 'json':
@@ -292,7 +295,6 @@ class ESForeignDataWrapper(ForeignDataWrapper):
                 current = None
                 break
             current = current[k]
-        print('wtf', current)
         return current
 
     def get_rel_size(self, quals, columns):

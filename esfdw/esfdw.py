@@ -246,6 +246,7 @@ class ESForeignDataWrapper(ForeignDataWrapper):
                 field = self._column_to_es_field(column_name)
                 column_type_name = self._columns[column_name].type_name
                 self.debug('coldata: %s' % str({
+                    'column_name': column_name,
                     'column_type_name': column_type_name,
                     'field': field,
                     'options': self._columns[column_name].options
@@ -253,7 +254,7 @@ class ESForeignDataWrapper(ForeignDataWrapper):
                 if column_name == '_id':
                     # `_id` is special in that it's always present in the top-level
                     # result, not under `fields`.
-                    val = result['_id']
+                    row[column_name] = result['_id']
                     continue
                 # handle nested fields
                 if '.' in field:
@@ -261,11 +262,23 @@ class ESForeignDataWrapper(ForeignDataWrapper):
                 else:
                     val = obs.get(field, None)
                 if isinstance(val, list):
-                    separator = self._get_column_option(column_name, 'list_separator', ',')
+                    # Support postgres' ARRAY or TEXT for lists.
+                    # Both styles need to have a single type for all elements.
+                    # Because of that "cast" everything to string, i.e.
+                    # leave strings as is, but serialize everything else to JSON.
+                    # We could support int[] et al, but KISS for now.
                     if all([isinstance(x, unicode) for x in val]):
-                        val = separator.join([str(x) for x in val])
+                        strings = val
                     else:
-                        val = json.dumps(val)
+                        strings = [json.dumps(x) for x in val]
+                    if column_type_name == 'text':
+                        separator = self._get_column_option(column_name, 'list_separator', ',')
+                        val = separator.join(strings)
+                    elif column_type_name == 'text[]':
+                        val = strings
+                    else:
+                        raise TypeError('Invalid column type %s for column %s' % (column_type_name, column_name))
+
                 # val here can be scalar or still nested
                 # if it is defined as JSON, dump it
                 if column_type_name == 'json':

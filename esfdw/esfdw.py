@@ -282,7 +282,7 @@ class ESForeignDataWrapper(ForeignDataWrapper):
                 # val here can be scalar or still nested
                 # if it is defined as JSON, dump it
                 if column_type_name == 'json':
-                    val = json.dumps(obs)
+                    val = json.dumps(val)
                 row[column_name] = val
             yield row
 

@@ -18,6 +18,10 @@ put $id <<'EOF'
   "my_list": [
     "one",
     "another"
+  ],
+  "list_with_objects": [
+    {"a": 1, "b": "doc1-b1"},
+    {"a": 2, "b": "doc1-b2"}
   ]
 }
 EOF
@@ -35,6 +39,10 @@ put $id <<'EOF'
   "my_list": [
     "two",
     "another"
+  ],
+  "list_with_objects": [
+    {"a": 1, "b": "doc1-b1"},
+    {"a": 2, "b": "doc1-b2"}
   ]
 }
 EOF

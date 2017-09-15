@@ -48,19 +48,18 @@ class ESForeignDataWrapper(ForeignDataWrapper):
             self.log('debug enabled! This generates very much output on the server.', level=logging.WARNING)
 
     def _column_to_es_field(self, column):
-        if self._options.get('column_name_translation') == 'true':
-            return self.convert_column_name
         options = self._columns[column].options
         if 'es_property' in options:
-            self.debug('got es_property for "%s"' % column)
+            self.debug('got es_property for "%s": "%s"' %(column, str(options['es_property'])))
             return options['es_property']
         return column
 
     def log(self, msg, level=None):
         self._logs.append(str(msg))
 
-    def debug(self, msg):
+    def debug(self, *msgs):
         if self._debug:
+            msg = ' '.join(map(str, msgs))
             print('DEBUG-esfdw: %s' % msg)
 
     def _flush_logs(self):
@@ -87,28 +86,6 @@ class ESForeignDataWrapper(ForeignDataWrapper):
         more time-based indices.
         """
         return self._options['index']
-
-    def convert_column_name(self, column):
-        """Given a column name, return the corresponding Elasticsearch field name.
-
-        The default implementation replaces `__` with `.` (allowing for specifying
-        fields in nested objects) and `_` with `-` (to reflect common ElasticSearch
-        convention).
-
-        `_id` is left untranslated.
-        `timestamp` is converted to `@timestamp` to match Logstash conventions.
-
-        This method is used only for foreign tables that were created with the option
-        `column_name_translation` set to the value `true`.
-
-        This method can be overridden in a subclass if a different implementation
-        is desired.
-        """
-        if column == '_id':
-            return column
-        elif column == 'timestamp':
-            return '@timestamp'
-        return column.replace('__', '.').replace('_', '-')
 
     def _endpoint_to_datetime(self, endpoint):
         # When dealing with date and time ranges, we get a string formatted as
@@ -263,40 +240,59 @@ class ESForeignDataWrapper(ForeignDataWrapper):
             obs = result.get('_source', {})
             self.debug('obs: %s' % obs)
 
-            def _massage_value(value, column):
-                if column == '_id':
+            row = {}
+            for column_name in columns:
+                field = self._column_to_es_field(column_name)
+                column_type_name = self._columns[column_name].type_name
+                self.debug('coldata: %s' % str({
+                    'column_type_name': column_type_name,
+                    'field': field,
+                    'options': self._columns[column_name].options
+                }))
+                if column_name == '_id':
                     # `_id` is special in that it's always present in the top-level
                     # result, not under `fields`.
-                    return result['_id']
-                # XXX list join draft
-                if isinstance(value, list):
-                    if all([isinstance(v, str) for v in value]):
-                        return ','.join(value)
-                    else:
-                        return value
-                return value
-            row = {}
-            for column in columns:
-                field = self._column_to_es_field(column)
-                column_type_name = self._columns[column].type_name
+                    val = result['_id']
+                    continue
+                # handle nested fields
                 if '.' in field:
-                    keys = field.split('.')
-                    current = obs
-                    for k in keys:
-                        # return None for nested fields without a value in this doc
-                        if not k in current:
-                            current = None
-                            break
-                        current = current[k]
-                    val = current
+                    val = self._get_nested(obs, field)
                 else:
-                    val = _massage_value(obs.get(field, None), column)
+                    val = obs.get(field, None)
+                if isinstance(val, list):
+                    separator = self._get_column_option(column_name, 'list_separator', ',')
+                    val = separator.join([str(x) for x in val])
                 # val here can be scalar or still nested
                 # if it is defined as JSON, dump it
                 if column_type_name == 'json':
                     val = json.dumps(obs)
-                row[column] = val
+                row[column_name] = val
             yield row
+
+    def _get_column_option(self, column_name, option, default=None):
+        return self._columns[column_name].options.get(option, default)
+
+    @staticmethod
+    def _get_nested(nested_dict, field):
+        """
+        Given a nested dict and a dot-separated field path, returns the value
+        at this path or None if the path does not exist, e.g.:
+
+        >>> _get_nested({"foo": {"bar": "baz"}}, 'foo.bar')
+        "baz"
+        """
+        print(nested_dict, field)
+        keys = field.split('.')
+        current = nested_dict
+        for k in keys:
+            print('key', k, 'current', current)
+            # return None for nested fields without a value in this doc
+            if not k in current:
+                current = None
+                break
+            current = current[k]
+        print('wtf', current)
+        return current
 
     def get_rel_size(self, quals, columns):
         must_list, must_not_list = self._make_match_lists(quals)

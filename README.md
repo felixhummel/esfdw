@@ -20,8 +20,6 @@ esfdw depends on [Multicorn](http://multicorn.org), a PostgreSQL extension for w
   <a name="pushed_operators"></a>
   * Converting many common PostgreSQL operators to Elasticsearch filters, which are then used in the Elasticsearch query that retrieves the documents. This greatly improves performance by reducing the amount of data that needs to be fetched from Elasticsearch into PostgreSQL. Operators currently pushed down to Elasticsearch are `=`, `<>`, `LIKE`, `<@` (range), `<`, `<=`, `>`, and `>=`.
   * Using the [`fields` query parameter](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-fields.html) to reduce the amount of data transferred between Elasticsearch and PostgreSQL
-  * Optionally, [converting PostgreSQL column names to Elasticsearch field names](#column_name_translation) to match the respective naming conventions of the databases
-    * This functionality is opt-in and is enabled via the `column_name_translation` foreign table option
   * Specifying the document type and index or indices to use in the Elasticsearch query on a per-table basis
   * [Mostly-automatic generation](#mapping_to_schema) of `CREATE FOREIGN TABLE` DDL from Elasticsearch mappings
   * Estimating the resulting relation size so as to help the planner (`get_rel_size` Multicorn method)
@@ -99,11 +97,6 @@ CREATE FOREIGN TABLE foreign_es_table (
   * `index` is the value of the index parameter to use in Elasticsearch searches.
   * `doc_type` is the value of the doc_type parameter to use in Elasticsearch searches.
   <a name="column_name_translation"></a>
-  * `column_name_translation` specifies whether PostgreSQL column name undergo translation when mapped to Elasticsearch field names. If the value of this option is `true`, the following translations occur:
-    * An underscore (`_`) is converted to a dash (`-`)
-    * A double underscore (`__`) is converted to a dot (`.`) and can be used for nested Elasticsearch fields
-    * `timestamp` is mapped to `@timestamp` to match the common Logstash convention
-    * For example, the PostgreSQL column name `foo__bar_baz` is converted to the Elasticsearch field `foo.bar-baz`
   * `loglevel` can be one of `DEBUG`, `INFO`, `WARNING`, `ERROR` or `CRITICAL` (see the
     [multicorn docs](http://multicorn.readthedocs.io/en/latest/implementing-tutorial.html#error-reporting)
   * Setting `debug` to `true` prints debugging information to STDOUT of the **server** process.

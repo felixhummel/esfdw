@@ -12,7 +12,8 @@ CREATE FOREIGN TABLE hello (
   my_nested_string TEXT OPTIONS (es_property 'my_nested.string'),
   my_nested_integer TEXT OPTIONS (es_property 'my_nested.integer'),
   my_nested_as_json JSON OPTIONS (es_property 'my_nested'),
-  list_with_objects TEXT
+  list_with_objects TEXT,
+  list_with_objects_as_json JSON OPTIONS (es_property 'list_with_objects')
 ) SERVER es_srv OPTIONS (
   index 'my_index',
   doc_type 'my_type',

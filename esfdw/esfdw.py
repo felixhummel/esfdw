@@ -276,6 +276,9 @@ class ESForeignDataWrapper(ForeignDataWrapper):
                         val = separator.join(strings)
                     elif column_type_name == 'text[]':
                         val = strings
+                    elif column_type_name == 'json':
+                        # json is handled generally below
+                        pass
                     else:
                         raise TypeError('Invalid column type %s for column %s' % (column_type_name, column_name))
 

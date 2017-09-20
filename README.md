@@ -138,6 +138,7 @@ SQL statements live in `sql/`. Elasticsearch scripts and helpers can be found in
 Start it up, put some documents into Elasticsearch and look them up:
 ```
 cp .env.sample .env
+cp dev/docker-compose.override.yml .
 docker-compose up -d
 ./dev/index.sh
 ./dev/search.sh

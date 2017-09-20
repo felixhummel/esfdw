@@ -9,9 +9,9 @@ CREATE FOREIGN TABLE hello (
   my_list TEXT OPTIONS (list_separator '|'),
   my_array TEXT[] OPTIONS (es_property 'my_list'),
   different_sep TEXT OPTIONS (es_property 'my_list'),
-  nested_string TEXT OPTIONS (es_property 'my_nested.string'),
-  nested_integer TEXT OPTIONS (es_property 'my_nested.integer'),
-  nested_as_json JSON OPTIONS (es_property 'my_nested'),
+  my_nested_string TEXT OPTIONS (es_property 'my_nested.string'),
+  my_nested_integer TEXT OPTIONS (es_property 'my_nested.integer'),
+  my_nested_as_json JSON OPTIONS (es_property 'my_nested'),
   list_with_objects TEXT
 ) SERVER es_srv OPTIONS (
   index 'my_index',

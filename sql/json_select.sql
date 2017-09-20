@@ -1,1 +1,1 @@
-SELECT nested_as_json->'my_nested'->'string' AS value FROM hello;
+SELECT my_nested_as_json->'string' AS value FROM hello;

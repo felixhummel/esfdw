@@ -64,6 +64,8 @@ class ESForeignDataWrapper(ForeignDataWrapper):
             print('DEBUG-esfdw: %s' % msg)
 
     def _flush_logs(self):
+        if not self._logs:
+            return
         result = '\n    >>> '.join(self._logs)
         log_to_postgres('\n    >>> ' + result, self._loglevel)
 

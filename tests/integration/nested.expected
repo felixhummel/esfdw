@@ -1,0 +1,2 @@
+"integer"=>20, "string"=>"bar 2"|bar 2|20|{"integer": 20, "string": "bar 2"}
+"integer"=>10, "string"=>"bar 1"|bar 1|10|{"integer": 10, "string": "bar 1"}

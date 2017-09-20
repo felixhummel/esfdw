@@ -309,6 +309,9 @@ class ESForeignDataWrapper(ForeignDataWrapper):
         for k in keys:
             print('key', k, 'current', current)
             # return None for nested fields without a value in this doc
+            if isinstance(current, list):
+                # this list could contain anything. skip objects not containing `k`.
+                return [x[k] for x in current if x.get(k) is not None]
             if not k in current:
                 current = None
                 break

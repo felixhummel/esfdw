@@ -1,0 +1,2 @@
+two|another|{two,another}|two,another|{"a": 1, "b": "doc1-b1"},{"a": 2, "b": "doc1-b2"},{"something": {"completely": "different"}}|doc1-b1,doc1-b2|[{"a": 1, "b": "doc1-b1"}, {"a": 2, "b": "doc1-b2"}, {"something": {"completely": "different"}}]
+one|another|{one,another}|one,another|{"a": 1, "b": "doc1-b1"},{"a": 2, "b": "doc1-b2"}|doc1-b1,doc1-b2|[{"a": 1, "b": "doc1-b1"}, {"a": 2, "b": "doc1-b2"}]

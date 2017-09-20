@@ -150,4 +150,5 @@ Use the FDW:
 ./dev/query < sql/table.sql
 ./dev/query < sql/select.sql
 ./dev/query < sql/json_select.sql
+./tests/integration/run.sh
 ```

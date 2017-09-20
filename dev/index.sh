@@ -42,7 +42,8 @@ put $id <<'EOF'
   ],
   "list_with_objects": [
     {"a": 1, "b": "doc1-b1"},
-    {"a": 2, "b": "doc1-b2"}
+    {"a": 2, "b": "doc1-b2"},
+    {"something": {"completely": "different"}}
   ]
 }
 EOF

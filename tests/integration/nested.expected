@@ -1,2 +1,2 @@
-"integer"=>20, "string"=>"bar 2"|bar 2|20|{"integer": 20, "string": "bar 2"}
-"integer"=>10, "string"=>"bar 1"|bar 1|10|{"integer": 10, "string": "bar 1"}
+"integer"=>10, "string"=>"bar 1"|bar 1|10|{"integer": 10, "string": "bar 1"}|different_nested foo|different_nested bar
+"integer"=>20, "string"=>"bar 2"|bar 2|20|{"integer": 20, "string": "bar 2"}||different_nested bar

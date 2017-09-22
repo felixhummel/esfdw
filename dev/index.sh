@@ -15,6 +15,10 @@ put $id <<'EOF'
     "string": "bar 1",
     "integer": 10
   },
+  "different_nested": {
+    "foo": "different_nested foo",
+    "bar": "different_nested bar"
+  },
   "my_list": [
     "one",
     "another"
@@ -35,6 +39,9 @@ put $id <<'EOF'
   "my_nested": {
     "string": "bar 2",
     "integer": 20
+  },
+  "different_nested": {
+    "bar": "different_nested bar"
   },
   "my_list": [
     "two",

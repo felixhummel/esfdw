@@ -10,6 +10,8 @@ CREATE FOREIGN TABLE hello (
   my_nested_string TEXT OPTIONS (es_property 'my_nested.string'),
   my_nested_integer TEXT OPTIONS (es_property 'my_nested.integer'),
   my_nested_as_json JSON OPTIONS (es_property 'my_nested'),
+  different_nested__foo TEXT OPTIONS (es_property 'different_nested.foo'),
+  different_nested__bar TEXT OPTIONS (es_property 'different_nested.bar'),
 
   my_list TEXT OPTIONS (list_separator '|'),
   my_array TEXT[] OPTIONS (es_property 'my_list'),
